@@ -1,4 +1,8 @@
 using API.Data;
+using API.Repositories;
+using API.Repositories.Interfaces;
+using API.Services;
+using API.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +13,10 @@ builder.Services.AddDbContext<TaskManagementDbContext>
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ITokenProvider, TokenProvider>();
 
 var app = builder.Build();
 
