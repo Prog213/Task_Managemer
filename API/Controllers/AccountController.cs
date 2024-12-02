@@ -10,31 +10,17 @@ namespace API.Controllers
     {
 
         [HttpPost("register")]
-        public async Task<IActionResult> RegisterUserAsync([FromBody]RegisterDto registerDto)
+        public async Task<ActionResult<UserDto>> RegisterUser([FromBody] RegisterDto registerDto)
         {
-            try
-            {
-                var user = await userService.RegisterUserAsync(registerDto);
-                return Ok(user);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var user = await userService.RegisterUserAsync(registerDto);
+            return Ok(user);
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> AuthenticateUserAsync(LoginDto loginDto)
+        public async Task<ActionResult<string>> AuthenticateUser([FromBody] LoginDto loginDto)
         {
-            try
-            {
-                var token = await userService.AuthenticateUserAsync(loginDto);
-                return Ok(token);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var token = await userService.AuthenticateUserAsync(loginDto);
+            return Ok(token);
         }
     }
 }

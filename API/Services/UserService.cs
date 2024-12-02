@@ -9,12 +9,11 @@ namespace API.Services;
 
 public class UserService(IUserRepository userRepository, IMapper mapper, ITokenProvider tokenProvider) : IUserService
 {
-
     public async Task<UserDto> RegisterUserAsync(RegisterDto registerDto)
     {
-        if(await userRepository.UserExistsAsync(registerDto.Username , registerDto.Email))
+        if (await UserExists(registerDto.Username, registerDto.Email))
         {
-            throw new InvalidOperationException("Username or email already exists.");
+            throw new ArgumentException("Username or email already exists.");
         }
 
         var hashedPassword = BC.HashPassword(registerDto.Password);
@@ -28,7 +27,7 @@ public class UserService(IUserRepository userRepository, IMapper mapper, ITokenP
         };
 
         userRepository.AddUser(user);
-        if (!await userRepository.SaveAllAsync()) throw new Exception("Failed to register user.");
+        await userRepository.SaveAllAsync();
         return mapper.Map<UserDto>(user);
     }
 
@@ -41,5 +40,17 @@ public class UserService(IUserRepository userRepository, IMapper mapper, ITokenP
         }
 
         return tokenProvider.CreateToken(user);
+    }
+
+    public async Task<bool> UserExists(string username, string email)
+    {
+        return await userRepository.UserExistsAsync(username, email);
+    }
+
+    public async Task<User> GetUserByUsernameAsync(string username)
+    {
+        var user = await userRepository.GetUserByUsernameAsync(username)
+            ?? throw new KeyNotFoundException("User not found.");
+        return user;
     }
 }

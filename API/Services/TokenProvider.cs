@@ -17,7 +17,7 @@ public class TokenProvider(IConfiguration config) : ITokenProvider
 
         var claims = new List<Claim>
         {
-            new(ClaimTypes.NameIdentifier, user.Username)
+            new(ClaimTypes.Name, user.Username),
         };
 
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
