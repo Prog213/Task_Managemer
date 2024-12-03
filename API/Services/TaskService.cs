@@ -1,3 +1,4 @@
+using API.Helpers;
 using API.Models;
 using API.Models.Dtos.AppTask;
 using API.Repositories.Interfaces;
@@ -54,10 +55,10 @@ public class TaskService(ITaskRepository taskRepository, IUserService userServic
         return mapper.Map<AppTaskDto>(task);
     }
 
-    public async Task<IEnumerable<AppTaskDto>> GetTasksAsync(string username)
+    public async Task<PagedList<AppTaskDto>> GetTasksAsync(string username, TaskQueryParams queryParams)
     {
-        var tasks = await taskRepository.GetTasksAsync(username);
-        return mapper.Map<IEnumerable<AppTaskDto>>(tasks);
+        var tasksPagedList = await taskRepository.GetTasksAsync(username, queryParams);
+        return tasksPagedList;
     }
 
     public async Task UpdateTaskAsync(Guid id, UpdateTaskDto task, string username)
@@ -72,6 +73,7 @@ public class TaskService(ITaskRepository taskRepository, IUserService userServic
             throw new UnauthorizedAccessException("You can only update your own tasks.");
         }
 
+        existingTask.UpdatedAt = DateTime.Now;
         mapper.Map(task, existingTask);
         taskRepository.UpdateTask(existingTask);
 

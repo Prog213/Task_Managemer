@@ -1,4 +1,5 @@
 using API.Extensions;
+using API.Helpers;
 using API.Models.Dtos.AppTask;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -12,21 +13,21 @@ namespace API.Controllers
     public class TaskController(ITaskService taskService) : ControllerBase
     {
         [HttpGet]
-        public async Task<ActionResult<AppTaskDto>> GetTasks()
+        public async Task<ActionResult<PagedList<AppTaskDto>>> GetTasks([FromQuery] TaskQueryParams queryParams)
         {
-            var tasks = await taskService.GetTasksAsync(User.GetUsername());
+            var tasks = await taskService.GetTasksAsync(User.GetUsername(), queryParams);
             return Ok(tasks);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetTaskById(Guid id)
+        public async Task<ActionResult<AppTaskDto>> GetTaskById(Guid id)
         {
             var task = await taskService.GetTaskByIdAsync(id, User.GetUsername());
             return Ok(task);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateTask(AddTaskDto taskDto)
+        public async Task<ActionResult<AppTaskDto>> CreateTask(AddTaskDto taskDto)
         {
             var task = await taskService.CreateTaskAsync(taskDto, User.GetUsername());
             return CreatedAtAction(nameof(GetTaskById), new { id = task.Id }, task);

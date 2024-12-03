@@ -1,11 +1,15 @@
 using API.Data;
+using API.Helpers;
 using API.Models;
+using API.Models.Dtos.AppTask;
 using API.Repositories.Interfaces;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories;
 
-public class TaskRepository(TaskManagementDbContext context) : ITaskRepository
+public class TaskRepository(TaskManagementDbContext context, IMapper mapper) : ITaskRepository
 {
     public void AddTask(AppTask task)
     {
@@ -23,9 +27,42 @@ public class TaskRepository(TaskManagementDbContext context) : ITaskRepository
             .FirstOrDefaultAsync(t => t.Id == id);
     }
 
-    public async Task<IEnumerable<AppTask>> GetTasksAsync(string username)
+    public async Task<PagedList<AppTaskDto>> GetTasksAsync(string username, TaskQueryParams queryParams)
     {
-        return await context.Tasks.Where(t => t.User!.Username == username).ToListAsync();
+        var query = context.Tasks
+            .Where(t => t.User!.Username == username)
+            .AsQueryable();
+
+        if (queryParams.Status.HasValue)
+        {
+            query = query.Where(t => t.Status == queryParams.Status.Value);
+        }
+
+        if (queryParams.Priority.HasValue)
+        {
+            query = query.Where(t => t.Priority == queryParams.Priority.Value);
+        }
+
+        if (queryParams.MinDate.HasValue)
+        {
+            var date = queryParams.MinDate.Value.ToUniversalTime();
+            query = query.Where(t => t.DueDate >= date);
+        }
+
+        if (queryParams.MaxDate.HasValue)
+        {
+            var date = queryParams.MaxDate.Value.ToUniversalTime();
+            query = query.Where(t => t.DueDate <= date);
+        }
+
+        query = queryParams.OrderBy switch
+        {
+            "DueDate" => query.OrderBy(t => t.DueDate),
+            "Priority" => query.OrderBy(t => t.Priority),
+            _ => query
+        };
+
+        return await PagedList<AppTaskDto>.CreateAsync(mapper.ProjectTo<AppTaskDto>(query), queryParams.PageNumber, queryParams.PageSize);
     }
 
     public async Task<bool> SaveAllAsync()
