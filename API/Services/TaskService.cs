@@ -7,12 +7,14 @@ using AutoMapper;
 
 namespace API.Services;
 
-public class TaskService(ITaskRepository taskRepository, IUserService userService, IMapper mapper) : ITaskService
+public class TaskService(ITaskRepository taskRepository, IUserService userService, IMapper mapper, 
+    ILogger<TaskService> logger) : ITaskService
 {
     public async Task<AppTaskDto> CreateTaskAsync(AddTaskDto taskDto, string username)
     {
-        var user = await userService.GetUserByUsernameAsync(username) 
-            ?? throw new UnauthorizedAccessException("User not found");
+        logger.LogInformation("Creating new task: {@task} for user {username}", taskDto, username);
+
+        var user = await userService.GetUserByUsernameAsync(username);
 
         var task = new AppTask
         {
@@ -33,25 +35,32 @@ public class TaskService(ITaskRepository taskRepository, IUserService userServic
 
     public async Task DeleteTaskAsync(Guid id, string username)
     {
-        var existingTask = await taskRepository.GetTaskByIdAsync(id, username) 
-            ?? throw new KeyNotFoundException("Task not found.");
+        logger.LogInformation("Deleting task with id: {id} for user {username}", id, username);
+
+        var existingTask = await GetTaskByIdAsync(id, username);
 
         var user = await userService.GetUserByUsernameAsync(username);
 
-        if (existingTask.User == null || existingTask.UserId != user.Id)
+        if (existingTask!.User == null || existingTask.UserId != user.Id)
         {
-            throw new UnauthorizedAccessException("You can only delete your own tasks.");
+            throw new UnauthorizedAccessException("You can only update your own tasks.");
         }
 
         taskRepository.DeleteTask(existingTask);
         await taskRepository.SaveAllAsync();
     }
 
-    public async Task<AppTaskDto?> GetTaskByIdAsync(Guid id, string username)
+    public async Task<AppTask> GetTaskByIdAsync(Guid id, string username)
     {
-        var task = await taskRepository.GetTaskByIdAsync(id, username)
-            ?? throw new KeyNotFoundException("Task not found.");
+        var existingTask = await taskRepository.GetTaskByIdAsync(id, username) 
+            ?? throw new KeyNotFoundException($"Task with id:{id} is not found.");
+        
+        return existingTask;
+    }
 
+    public async Task<AppTaskDto?> GetTaskDtoByIdAsync(Guid id, string username)
+    {
+        var task = await GetTaskByIdAsync(id, username);
         return mapper.Map<AppTaskDto>(task);
     }
 
@@ -63,8 +72,9 @@ public class TaskService(ITaskRepository taskRepository, IUserService userServic
 
     public async Task UpdateTaskAsync(Guid id, UpdateTaskDto task, string username)
     {
-        var existingTask = await taskRepository.GetTaskByIdAsync(id, username) 
-            ?? throw new KeyNotFoundException("Task not found.");
+        logger.LogInformation("Updating task with id: {id} for user {username}", id, username);
+        
+        var existingTask = await GetTaskByIdAsync(id, username);
 
         var user = await userService.GetUserByUsernameAsync(username);
 

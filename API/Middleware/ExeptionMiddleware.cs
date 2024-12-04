@@ -1,6 +1,6 @@
 namespace API.Middleware;
 
-public class ExceptionMiddleware(RequestDelegate next)
+public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
 {
     public async Task InvokeAsync(HttpContext context)
     {
@@ -10,11 +10,11 @@ public class ExceptionMiddleware(RequestDelegate next)
         }
         catch (Exception ex)
         {
-            await HandleExceptionAsync(context, ex);
+            await HandleExceptionAsync(context, ex, logger);
         }
     }
 
-    private static Task HandleExceptionAsync(HttpContext context, Exception exception)
+    private static Task HandleExceptionAsync(HttpContext context, Exception exception, ILogger<ExceptionMiddleware> logger)
     {
         var statusCode = exception switch
         {
@@ -24,9 +24,13 @@ public class ExceptionMiddleware(RequestDelegate next)
             _ => StatusCodes.Status500InternalServerError
         };
 
+        var errorMessage = statusCode == 500 ? "Internal Server Error" : exception.Message;
+
+        logger.LogError(errorMessage);
+
         var result = new
         {
-            error = exception.Message,
+            error = errorMessage,
             status = statusCode
         };
 

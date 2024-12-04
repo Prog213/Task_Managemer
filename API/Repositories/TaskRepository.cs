@@ -59,7 +59,7 @@ public class TaskRepository(TaskManagementDbContext context, IMapper mapper) : I
         {
             "DueDate" => query.OrderBy(t => t.DueDate),
             "Priority" => query.OrderBy(t => t.Priority),
-            _ => query
+            _ => query.OrderBy(t => t.Title)
         };
 
         return await PagedList<AppTaskDto>.CreateAsync(mapper.ProjectTo<AppTaskDto>(query), queryParams.PageNumber, queryParams.PageSize);

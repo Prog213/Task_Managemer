@@ -7,10 +7,14 @@ using BC = BCrypt.Net.BCrypt;
 
 namespace API.Services;
 
-public class UserService(IUserRepository userRepository, IMapper mapper, ITokenProvider tokenProvider) : IUserService
+public class UserService(IUserRepository userRepository, IMapper mapper, ITokenProvider tokenProvider,
+    ILogger<UserService> logger) : IUserService
 {
     public async Task<UserDto> RegisterUserAsync(RegisterDto registerDto)
     {
+        logger.LogInformation("Registering new user with username {username} and email {email}", 
+            registerDto.Username, registerDto.Email);
+        
         if (await UserExists(registerDto.Username, registerDto.Email))
         {
             throw new ArgumentException("Username or email already exists.");
