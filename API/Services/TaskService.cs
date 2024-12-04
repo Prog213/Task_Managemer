@@ -1,6 +1,7 @@
 using API.Helpers;
 using API.Models;
 using API.Models.Dtos.AppTask;
+using API.Models.Enums;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using AutoMapper;
@@ -21,8 +22,8 @@ public class TaskService(ITaskRepository taskRepository, IUserService userServic
             Title = taskDto.Title,
             Description = taskDto.Description,
             DueDate = taskDto.DueDate,
-            Status = taskDto.Status,
-            Priority = taskDto.Priority,
+            Status = Enum.Parse<AppTaskStatus>(taskDto.Status),
+            Priority = Enum.Parse<AppTaskPriority>(taskDto.Priority),
             UserId = user.Id,
             CreatedAt = DateTime.UtcNow
         };

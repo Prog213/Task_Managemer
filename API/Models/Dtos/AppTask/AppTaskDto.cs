@@ -8,8 +8,8 @@ public class AppTaskDto
     public required string Title { get; set; }
     public string? Description { get; set; }
     public DateTime? DueDate { get; set; }
-    public AppTaskStatus Status { get; set; }
-    public AppTaskPriority Priority { get; set; }
+    public required string Status { get; set; }
+    public required string Priority { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }
