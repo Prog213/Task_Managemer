@@ -21,7 +21,8 @@ public static class IdentityServiceExtension
                     ValidateAudience = false
                 };
             });
-
+        
         return services;
+
     }
 }

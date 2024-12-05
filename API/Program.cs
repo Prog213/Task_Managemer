@@ -1,11 +1,16 @@
 using API.Extensions;
 using API.Middleware;
+using Application.Extensions;
+using Infrastructure.Extensions;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddIdentityServices(builder.Configuration);
+builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddApplication();
+
 builder.Host.UseSerilog((context, configuration) =>
 {
     configuration.ReadFrom.Configuration(context.Configuration);
@@ -22,8 +27,6 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseSerilogRequestLogging();
-
-app.UseHttpsRedirection();
 
 app.UseAuthorization();
 

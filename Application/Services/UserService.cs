@@ -1,0 +1,61 @@
+using Application.Dtos;
+using Application.Interfaces;
+using AutoMapper;
+using Domain.Interfaces;
+using Domain.Models;
+using Microsoft.Extensions.Logging;
+using BC = BCrypt.Net.BCrypt;
+
+namespace Application.Services;
+
+public class UserService(IUserRepository userRepository, IMapper mapper, ITokenProvider tokenProvider,
+    ILogger<UserService> logger) : IUserService
+{
+    public async Task<UserDto> RegisterUserAsync(RegisterDto registerDto)
+    {
+        logger.LogInformation("Registering new user with username {username} and email {email}",
+            registerDto.Username, registerDto.Email);
+
+        if (await UserExists(registerDto.Username, registerDto.Email))
+        {
+            throw new ArgumentException("Username or email already exists.");
+        }
+
+        var hashedPassword = BC.HashPassword(registerDto.Password);
+        var user = new User
+        {
+            Username = registerDto.Username,
+            Email = registerDto.Email,
+            PasswordHash = hashedPassword,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        userRepository.AddUser(user);
+        await userRepository.SaveAllAsync();
+        return mapper.Map<UserDto>(user);
+    }
+
+    public async Task<string> AuthenticateUserAsync(LoginDto loginDto)
+    {
+        var user = await userRepository.GetUserByUsernameAsync(loginDto.Username);
+        if (user == null || !BC.Verify(loginDto.Password, user.PasswordHash))
+        {
+            throw new UnauthorizedAccessException("Invalid username or password.");
+        }
+
+        return tokenProvider.CreateToken(user);
+    }
+
+    public async Task<bool> UserExists(string username, string email)
+    {
+        return await userRepository.UserExistsAsync(username, email);
+    }
+
+    public async Task<User> GetUserByUsernameAsync(string username)
+    {
+        var user = await userRepository.GetUserByUsernameAsync(username)
+            ?? throw new KeyNotFoundException("User not found.");
+        return user;
+    }
+}

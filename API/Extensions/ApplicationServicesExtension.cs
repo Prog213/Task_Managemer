@@ -1,9 +1,6 @@
-using API.Data;
-using API.Repositories;
-using API.Repositories.Interfaces;
-using API.Services;
-using API.Services.Interfaces;
-using Microsoft.EntityFrameworkCore;
+using API.SwaggerOptions;
+using Microsoft.Extensions.Options;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace API.Extensions;
 
@@ -13,17 +10,10 @@ public static class ApplicationServicesExtension
         IConfiguration config)
     {
         services.AddControllers();
-        services.AddDbContext<TaskManagementDbContext>
-            (options => options.UseNpgsql(config.GetConnectionString("DefaultConnection")));
 
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
-        services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-        services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IUserService, UserService>();
-        services.AddScoped<ITokenProvider, TokenProvider>();
-        services.AddScoped<ITaskRepository, TaskRepository>();
-        services.AddScoped<ITaskService, TaskService>();
+        services.AddTransient<IConfigureOptions<SwaggerGenOptions>, SwaggerOptionsConfig>();
 
         return services;
     }

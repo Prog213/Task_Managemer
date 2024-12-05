@@ -1,7 +1,8 @@
 using API.Extensions;
-using API.Helpers;
-using API.Models.Dtos.AppTask;
-using API.Services.Interfaces;
+using Application.Common;
+using Application.Dtos.AppTask;
+using Application.Interfaces;
+using Domain.Specification;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
