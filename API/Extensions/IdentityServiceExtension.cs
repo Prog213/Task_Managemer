@@ -9,9 +9,11 @@ public static class IdentityServiceExtension
     public static IServiceCollection AddIdentityServices(this IServiceCollection services,
         IConfiguration config)
     {
+        // Add identity services
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
+                // Get token key from appsettings.json
                 var tokenKey = config["TokenKey"] ?? throw new Exception("TokenKey not found");
                 options.TokenValidationParameters = new TokenValidationParameters
                 {

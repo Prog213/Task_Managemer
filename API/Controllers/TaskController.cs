@@ -28,14 +28,14 @@ namespace API.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<AppTaskDto>> CreateTask(AddTaskDto taskDto)
+        public async Task<ActionResult<AppTaskDto>> CreateTask([FromBody] AddTaskDto taskDto)
         {
             var task = await taskService.CreateTaskAsync(taskDto, User.GetUsername());
             return CreatedAtAction(nameof(GetTaskById), new { id = task.Id }, task);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateTask(Guid id, UpdateTaskDto taskDto)
+        public async Task<IActionResult> UpdateTask(Guid id, [FromBody]UpdateTaskDto taskDto)
         {
             await taskService.UpdateTaskAsync(id, taskDto, User.GetUsername());
             return NoContent();

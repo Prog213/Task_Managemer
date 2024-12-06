@@ -13,4 +13,5 @@ public interface ITaskService
     public Task<AppTaskDto> CreateTaskAsync(AddTaskDto task, string username);
     public Task UpdateTaskAsync(Guid id, UpdateTaskDto task, string username);
     public Task DeleteTaskAsync(Guid id, string username);
+    public Task ValidateUserOwnership(AppTask task, string username);
 }

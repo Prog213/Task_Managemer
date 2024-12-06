@@ -16,11 +16,13 @@ public class UserService(IUserRepository userRepository, IMapper mapper, ITokenP
         logger.LogInformation("Registering new user with username {username} and email {email}",
             registerDto.Username, registerDto.Email);
 
+        // Check if user with the same username or email already exists
         if (await UserExists(registerDto.Username, registerDto.Email))
         {
             throw new ArgumentException("Username or email already exists.");
         }
 
+        // Hashing the password and create a new user
         var hashedPassword = BC.HashPassword(registerDto.Password);
         var user = new User
         {
@@ -31,19 +33,28 @@ public class UserService(IUserRepository userRepository, IMapper mapper, ITokenP
             UpdatedAt = DateTime.UtcNow
         };
 
+        // Add user to the repository and save changes
         userRepository.AddUser(user);
         await userRepository.SaveAllAsync();
+
+        // Return the user DTO
         return mapper.Map<UserDto>(user);
     }
 
     public async Task<string> AuthenticateUserAsync(LoginDto loginDto)
     {
+        // Get user by username and verify the password
         var user = await userRepository.GetUserByUsernameAsync(loginDto.Username);
         if (user == null || !BC.Verify(loginDto.Password, user.PasswordHash))
         {
             throw new UnauthorizedAccessException("Invalid username or password.");
         }
 
+        // Update the user's last login date and save changes
+        user.UpdatedAt = DateTime.UtcNow;
+        await userRepository.SaveAllAsync();
+
+        // Return the JWT token
         return tokenProvider.CreateToken(user);
     }
 

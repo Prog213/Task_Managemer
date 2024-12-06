@@ -7,6 +7,7 @@ public static class ServiceExtensions
 {
     public static void AddApplication(this IServiceCollection services)
     {
+        // Add application services
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<ITokenProvider, TokenProvider>();
         services.AddScoped<ITaskService, TaskService>();

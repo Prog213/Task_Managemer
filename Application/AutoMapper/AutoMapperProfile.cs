@@ -9,7 +9,10 @@ public class AutoMapperProfile : Profile
 {
     public AutoMapperProfile()
     {
+        // Create maps for models and DTOs
         CreateMap<User, UserDto>();
+
+        // Map enum values to strings
         CreateMap<AppTask, AppTaskDto>().ForMember(
             dest => dest.Priority,
             opt => opt.MapFrom(src => src.Priority.ToString())
@@ -17,6 +20,10 @@ public class AutoMapperProfile : Profile
             dest => dest.Status,
             opt => opt.MapFrom(src => src.Status.ToString())
         );
-        CreateMap<UpdateTaskDto, AppTask>();
+        CreateMap<UpdateTaskDto, AppTask>()
+            .ForMember(
+            dest => dest.DueDate,
+            opt => opt.MapFrom(src => src.DueDate!.Value.ToUniversalTime())
+        );
     }
 }

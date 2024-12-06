@@ -11,8 +11,10 @@ public class UpdateTaskDto
     public DateTime? DueDate { get; set; }
 
     [Required]
-    public AppTaskStatus Status { get; set; }
+    [EnumDataType(typeof(AppTaskStatus), ErrorMessage = "Invalid status. Valid values are: Pending, InProgress, Completed.")]
+    public string Status { get; set; } = null!;
 
     [Required]
-    public AppTaskPriority Priority { get; set; }
+    [EnumDataType(typeof(AppTaskPriority), ErrorMessage = "Invalid priority. Valid values are: Low, Medium, High.")]
+    public string Priority { get; set; } = null!;
 }

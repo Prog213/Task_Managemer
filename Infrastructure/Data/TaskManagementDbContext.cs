@@ -8,11 +8,6 @@ public class TaskManagementDbContext(DbContextOptions<TaskManagementDbContext> o
     public DbSet<User> Users { get; set; } = null!;
     public DbSet<AppTask> Tasks { get; set; } = null!;
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        optionsBuilder.UseNpgsql("User ID = postgres; Password = 123; Host = localhost; Port = 5432; Database = TaskManagment");
-    }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<User>(entity =>
@@ -23,9 +18,11 @@ public class TaskManagementDbContext(DbContextOptions<TaskManagementDbContext> o
 
         modelBuilder.Entity<AppTask>(entity =>
         {
+            // Displaying enum values to strings
             entity.Property(s => s.Status).HasConversion<string>();
             entity.Property(p => p.Priority).HasConversion<string>();
 
+            //  One-to-many relationship between User and Task
             entity.HasOne(t => t.User)
                 .WithMany(u => u.Tasks)
                 .HasForeignKey(t => t.UserId)

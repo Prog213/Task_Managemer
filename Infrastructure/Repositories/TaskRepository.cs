@@ -26,10 +26,12 @@ public class TaskRepository(TaskManagementDbContext context) : ITaskRepository
 
     public async Task<(IEnumerable<AppTask>, int)> GetTasksAsync(string username, TaskQueryParams queryParams)
     {
+        // Creating a queryable object
         var query = context.Tasks
             .Where(t => t.User!.Username == username)
             .AsQueryable();
 
+        // Adding properties to the query based on the query parameters
         if (queryParams.Status.HasValue)
         {
             query = query.Where(t => t.Status == queryParams.Status.Value);
@@ -42,12 +44,14 @@ public class TaskRepository(TaskManagementDbContext context) : ITaskRepository
 
         if (queryParams.MinDate.HasValue)
         {
+            // Converting the date to UTC
             var date = queryParams.MinDate.Value.ToUniversalTime();
             query = query.Where(t => t.DueDate >= date);
         }
 
         if (queryParams.MaxDate.HasValue)
         {
+            // Converting the date to UTC
             var date = queryParams.MaxDate.Value.ToUniversalTime();
             query = query.Where(t => t.DueDate <= date);
         }
@@ -59,6 +63,7 @@ public class TaskRepository(TaskManagementDbContext context) : ITaskRepository
             _ => query.OrderBy(t => t.Title)
         };
 
+        // Getting the list of tasks and count of items
         var result = await query.ToListAsync();
         var count = await query.CountAsync();
 
